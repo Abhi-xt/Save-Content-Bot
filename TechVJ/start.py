@@ -112,7 +112,7 @@ async def join_or_save(client: Client, message: Message):
             except InviteHashExpired:
                 await message.reply("**Invalid or expired invite link.**")
             except Exception as e:
-                if ERROR_MESSAGE:
+                if ERROR_MESSAGE == True:
                     await message.reply(f"**Error:** `{e}`")
             await acc.disconnect()
         except:
