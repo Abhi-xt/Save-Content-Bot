@@ -92,7 +92,35 @@ async def send_cancel(client: Client, message: Message):
         chat_id=message.chat.id, 
         text="**Batch Successfully Cancelled.**"
     )
+@Client.on_message(filters.text & filters.private)
+async def join_or_save(client: Client, message: Message):
+    text = message.text.strip()
 
+    # Invite link handling
+    if "https://t.me/+" in text or "https://t.me/joinchat/" in text:
+        user_data = await db.get_session(message.from_user.id)
+        if user_data is None:
+            return await message.reply("**You must /login first to use invite links.**")
+        try:
+            acc = Client("saverestricted", session_string=user_data, api_id=API_ID, api_hash=API_HASH)
+            await acc.connect()
+            try:
+                await acc.join_chat(text)
+                await message.reply("**Chat Joined Successfully.**")
+            except UserAlreadyParticipant:
+                await message.reply("**You have already joined this chat.**")
+            except InviteHashExpired:
+                await message.reply("**Invalid or expired invite link.**")
+            except Exception as e:
+                if ERROR_MESSAGE:
+                    await message.reply(f"**Error:** `{e}`")
+            await acc.disconnect()
+        except:
+            return await message.reply("**Your login session is expired. Use /logout and /login again.**")
+        return
+
+    # If not invite, pass to restricted content handler
+    await save(client, message)
 @Client.on_message(filters.text & filters.private)
 async def save(client: Client, message: Message):
     if "https://t.me/" in message.text:
