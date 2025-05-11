@@ -120,9 +120,9 @@ async def join_or_save(client: Client, message: Message):
         return
 
     # If not invite, pass to restricted content handler
-    await save(client, message)
+    await _save(client, message)
 @Client.on_message(filters.text & filters.private)
-async def save(client: Client, message: Message):
+async def _save(client: Client, message: Message):
     if "https://t.me/" in message.text:
         if batch_temp.IS_BATCH.get(message.from_user.id) == False:
             return await message.reply_text("**One Task Is Already Processing. Wait For Complete It. If You Want To Cancel This Task Then Use - /cancel**")
