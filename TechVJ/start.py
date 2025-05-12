@@ -3,6 +3,7 @@
 # Ask Doubt on telegram @KingVJ01
 
 import os
+import time
 import asyncio 
 import pyrogram
 from pyrogram import Client, filters, enums
@@ -27,9 +28,9 @@ async def downstatus(client, statusfile, message, chat):
             txt = downread.read()
         try:
             await client.edit_message_text(chat, message.id, f"**Downloaded:** **{txt}**")
-            await asyncio.sleep(10)
+            await asyncio.sleep(6)
         except:
-            await asyncio.sleep(5)
+            await asyncio.sleep(3)
 
 
 # upload status
@@ -44,16 +45,27 @@ async def upstatus(client, statusfile, message, chat):
             txt = upread.read()
         try:
             await client.edit_message_text(chat, message.id, f"**Uploaded:** **{txt}**")
-            await asyncio.sleep(10)
+            await asyncio.sleep(6)
         except:
-            await asyncio.sleep(5)
+            await asyncio.sleep(3)
 
+progress_data = {}  # Dictionary to store timestamps and previous values
 
-# progress writer
 def progress(current, total, message, type):
-    with open(f'{message.id}{type}status.txt', "w") as fileup:
-        fileup.write(f"{current * 100 / total:.1f}%")
+    now = time.time()
+    key = f"{message.id}_{type}"
+    prev = progress_data.get(key, (now, 0))
+    elapsed = now - prev[0]
+    diff = current - prev[1]
 
+    speed = (diff / elapsed) if elapsed > 0 else 0
+    speed_str = f"{speed / 1024:.2f} KB/s" if speed < 1024 * 1024 else f"{speed / (1024*1024):.2f} MB/s"
+
+    percent = current * 100 / total
+    with open(f'{message.id}{type}status.txt', "w") as fileup:
+        fileup.write(f"{percent:.1f}% - {speed_str}")
+
+    progress_data[key] = (now, current)
 
 # start command
 @Client.on_message(filters.command(["start"]))
