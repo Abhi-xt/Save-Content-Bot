@@ -97,23 +97,22 @@ async def join_or_save(client: Client, message: Message):
             acc = Client("saverestricted", session_string=user_data, api_id=API_ID, api_hash=API_HASH)
             await acc.connect()
             try:
-    await acc.join_chat(text)
-    await acc.disconnect()
-    await message.reply("**Chat Joined Successfully.**")
-except UserAlreadyParticipant:
-    await message.reply("**You have already joined this chat.**")
-except InviteHashExpired:
-    await message.reply("**Invalid or expired invite link.**")
-except Exception as e:
-    if "INVITE_REQUEST_SENT" in str(e):
-        await message.reply("**Join request sent. Please wait for admin approval.**")
-    elif ERROR_MESSAGE == True:
-        await message.reply(f"**Error:** `{e}`")
-            await acc.disconnect()
+                 await acc.join_chat(text)
+                 await acc.disconnect()
+                 await message.reply("**Chat Joined Successfully.**")
+            except UserAlreadyParticipant:
+                 await message.reply("**You have already joined this chat.**")
+            except InviteHashExpired:
+                 await message.reply("**Invalid or expired invite link.**")
+            except Exception as e:
+                 if "INVITE_REQUEST_SENT" in str(e):
+                     await message.reply("**Join request sent. Please wait for admin approval.**")
+                 elif ERROR_MESSAGE == True:
+                     await message.reply(f"**Error:** `{e}`")
+                 await acc.disconnect()
         except:
             return await message.reply("**Your login session is expired. Use /logout and /login again.**")
         return
-
     # If not invite, pass to restricted content handler
     await _save(client, message)
 @Client.on_message(filters.text & filters.private)
