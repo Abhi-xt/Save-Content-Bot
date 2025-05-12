@@ -60,17 +60,9 @@ def progress(current, total, message, type):
 async def send_start(client: Client, message: Message):
     if not await db.is_user_exist(message.from_user.id):
         await db.add_user(message.from_user.id, message.from_user.first_name)
-    buttons = [[
-        InlineKeyboardButton("❣️ Developer", url = "https://t.me/kingvj01")
-    ],[
-        InlineKeyboardButton('🔍 sᴜᴘᴘᴏʀᴛ ɢʀᴏᴜᴘ', url='https://t.me/vj_bot_disscussion'),
-        InlineKeyboardButton('🤖 ᴜᴘᴅᴀᴛᴇ ᴄʜᴀɴɴᴇʟ', url='https://t.me/vj_botz')
-    ]]
-    reply_markup = InlineKeyboardMarkup(buttons)
     await client.send_message(
         chat_id=message.chat.id, 
         text=f"<b>👋 Hi {message.from_user.mention}, I am Save Restricted Content Bot, I can send you restricted content by its post link.\n\nFor downloading restricted content /login first.\n\nKnow how to use bot by - /help</b>", 
-        reply_markup=reply_markup, 
         reply_to_message_id=message.id
     )
     return
@@ -105,15 +97,18 @@ async def join_or_save(client: Client, message: Message):
             acc = Client("saverestricted", session_string=user_data, api_id=API_ID, api_hash=API_HASH)
             await acc.connect()
             try:
-                await acc.join_chat(text)
-                await message.reply("**Chat Joined Successfully.**")
-            except UserAlreadyParticipant:
-                await message.reply("**You have already joined this chat.**")
-            except InviteHashExpired:
-                await message.reply("**Invalid or expired invite link.**")
-            except Exception as e:
-                if ERROR_MESSAGE == True:
-                    await message.reply(f"**Error:** `{e}`")
+    await acc.join_chat(text)
+    await acc.disconnect()
+    await message.reply("**Chat Joined Successfully.**")
+except UserAlreadyParticipant:
+    await message.reply("**You have already joined this chat.**")
+except InviteHashExpired:
+    await message.reply("**Invalid or expired invite link.**")
+except Exception as e:
+    if "INVITE_REQUEST_SENT" in str(e):
+        await message.reply("**Join request sent. Please wait for admin approval.**")
+    elif ERROR_MESSAGE == True:
+        await message.reply(f"**Error:** `{e}`")
             await acc.disconnect()
         except:
             return await message.reply("**Your login session is expired. Use /logout and /login again.**")
@@ -185,7 +180,7 @@ async def _save(client: Client, message: Message):
                             await client.send_message(message.chat.id, f"Error: {e}", reply_to_message_id=message.id)
 
             # wait time
-            await asyncio.sleep(3)
+            await asyncio.sleep(10)
         batch_temp.IS_BATCH[message.from_user.id] = True
 
 
