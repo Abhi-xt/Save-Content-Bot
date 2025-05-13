@@ -48,36 +48,45 @@ async def upstatus(client, statusfile, message, chat):
             await asyncio.sleep(6)
         except:
             await asyncio.sleep(3)
-progress_data = {}
 
+def humanbytes(size):
+    if not size:
+        return ""
+    power = 1024
+    t_n = 0
+    power_dict = {0: ' ', 1: 'K', 2: 'M', 3: 'G', 4: 'T'}
+    while size > power:
+        size /= power
+        t_n += 1
+    return "{:.2f} {}B".format(size, power_dict[t_n])
+
+def TimeFormatter(seconds: float) -> str:
+    minutes, seconds = divmod(int(seconds), 60)
+    hours, minutes = divmod(minutes, 60)
+    days, hours = divmod(hours, 24)
+    tmp = ((str(days) + "d, ") if days else "") + \
+        ((str(hours) + "h, ") if hours else "") + \
+        ((str(minutes) + "m, ") if minutes else "") + \
+        ((str(seconds) + "s, ") if seconds else "")
+    return tmp[:-2]
+            
+progress_data = {}
 def progress(current, total, message, type):
     now = time.time()
     key = f"{message.id}_{type}"
-    prev_time, prev_current = progress_data.get(key, (now, 0))
-    elapsed = now - prev_time
-    diff = current - prev_current
+    if key not in progress_data:
+        progress_data[key] = now
 
-    min_elapsed = 0.5
-    if elapsed < min_elapsed:
-        elapsed = min_elapsed
-
-    speed = diff / elapsed if elapsed > 0 else 0
-
-    # Cap unrealistic speed (e.g., over 100 MB/s)
-    if speed > 100 * 1024 * 1024:
-        speed = 0
-
-    speed_str = (
-        f"{speed / 1024:.2f} KB/s"
-        if speed < 1024 * 1024
-        else f"{speed / (1024 * 1024):.2f} MB/s"
-    )
-
+    start = progress_data[key]
+    elapsed = now - start
+    speed = current / elapsed if elapsed > 0 else 0
     percent = current * 100 / total
-    with open(f"{message.id}{type}status.txt", "w") as fileup:
-        fileup.write(f"{percent:.1f}% - {speed_str}")
+    eta = TimeFormatter((total - current) / speed) if speed > 0 else "Calculating"
+    speed_str = humanbytes(speed) + "/s"
 
-    progress_data[key] = (now, current)
+    with open(f"{message.id}{type}status.txt", "w") as fileup:
+        fileup.write(f"{percent:.1f}% - {speed_str} - ETA: {eta}")
+
 
 # start command
 @Client.on_message(filters.command(["start"]))
