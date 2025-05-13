@@ -48,21 +48,33 @@ async def upstatus(client, statusfile, message, chat):
             await asyncio.sleep(6)
         except:
             await asyncio.sleep(3)
-
-progress_data = {}  # Dictionary to store timestamps and previous values
+progress_data = {}
 
 def progress(current, total, message, type):
     now = time.time()
     key = f"{message.id}_{type}"
-    prev = progress_data.get(key, (now, 0))
-    elapsed = now - prev[0]
-    diff = current - prev[1]
+    prev_time, prev_current = progress_data.get(key, (now, 0))
+    elapsed = now - prev_time
+    diff = current - prev_current
 
-    speed = (diff / elapsed) if elapsed > 0 else 0
-    speed_str = f"{speed / 1024:.2f} KB/s" if speed < 1024 * 1024 else f"{speed / (1024*1024):.2f} MB/s"
+    min_elapsed = 0.5
+    if elapsed < min_elapsed:
+        elapsed = min_elapsed
+
+    speed = diff / elapsed if elapsed > 0 else 0
+
+    # Cap unrealistic speed (e.g., over 100 MB/s)
+    if speed > 100 * 1024 * 1024:
+        speed = 0
+
+    speed_str = (
+        f"{speed / 1024:.2f} KB/s"
+        if speed < 1024 * 1024
+        else f"{speed / (1024 * 1024):.2f} MB/s"
+    )
 
     percent = current * 100 / total
-    with open(f'{message.id}{type}status.txt', "w") as fileup:
+    with open(f"{message.id}{type}status.txt", "w") as fileup:
         fileup.write(f"{percent:.1f}% - {speed_str}")
 
     progress_data[key] = (now, current)
