@@ -27,7 +27,7 @@ async def downstatus(client, statusfile, message, chat):
         with open(statusfile, "r") as downread:
             txt = downread.read()
         try:
-            await client.edit_message_text(chat, message.id, f"**Downloaded:** **{txt}**")
+            await client.edit_message_text(chat, message.id, txt)
             await asyncio.sleep(6)
         except:
             await asyncio.sleep(3)
@@ -44,7 +44,7 @@ async def upstatus(client, statusfile, message, chat):
         with open(statusfile, "r") as upread:
             txt = upread.read()
         try:
-            await client.edit_message_text(chat, message.id, f"**Uploaded:** **{txt}**")
+            await client.edit_message_text(chat, message.id, txt)
             await asyncio.sleep(6)
         except:
             await asyncio.sleep(3)
