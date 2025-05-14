@@ -87,12 +87,12 @@ def progress(current, total, message, type):
     eta = TimeFormatter((total - current) / speed) if speed > 0 else "Calculating"
     speed_str = humanbytes(speed) + "/s"
 
-    action = "Downloading" if type == "down" else "Uploading"
+    action = "Downloading ..." if type == "down" else "Uploading ..."
     formatted = (
-    f"**{action}...** \n\n"
-    f"**✅ Completed** : **{percent:.1f}%**\n"
-    f"**⏳ Processed** : **{humanbytes(current)}** - **{humanbytes(total)}**\n"
-    f"**🚀 Speed** : **{speed_str}**\n"
+    f"**{action}** \n\n"
+    f"**✅ Completed** : **{percent:.1f}%**\n\n"
+    f"**⏳ Processed** : **{humanbytes(current)}** - **{humanbytes(total)}**\n\n"
+    f"**🚀 Speed** : **{speed_str}**\n\n"
     f"**⏰ ETA** : **{eta}**\n"
     )
 
@@ -244,7 +244,7 @@ async def handle_private(client: Client, acc, message: Message, chatid: int, msg
                 await client.send_message(message.chat.id, f"Error: {e}", reply_to_message_id=message.id, parse_mode=enums.ParseMode.HTML)
             return 
 
-    smsg = await client.send_message(message.chat.id, '**Downloading**', reply_to_message_id=message.id)
+    smsg = await client.send_message(message.chat.id, '**Downloading ...**', reply_to_message_id=message.id)
     asyncio.create_task(downstatus(client, f'{message.id}downstatus.txt', smsg, chat))
     try:
         file = await acc.download_media(msg, progress=progress, progress_args=[message,"down"])
