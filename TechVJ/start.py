@@ -49,12 +49,16 @@ async def upstatus(client, statusfile, message, chat):
         except:
             await asyncio.sleep(3)
 
+# Progress Write Here
+
+progress_data = {}
+
 def humanbytes(size):
     if not size:
         return ""
     power = 1024
     t_n = 0
-    power_dict = {0: ' ', 1: 'K', 2: 'M', 3: 'G', 4: 'T'}
+    power_dict = {0: '', 1: 'K', 2: 'M', 3: 'G', 4: 'T'}
     while size > power:
         size /= power
         t_n += 1
@@ -65,12 +69,11 @@ def TimeFormatter(seconds: float) -> str:
     hours, minutes = divmod(minutes, 60)
     days, hours = divmod(hours, 24)
     tmp = ((str(days) + "d, ") if days else "") + \
-        ((str(hours) + "h, ") if hours else "") + \
-        ((str(minutes) + "m, ") if minutes else "") + \
-        ((str(seconds) + "s, ") if seconds else "")
+          ((str(hours) + "h, ") if hours else "") + \
+          ((str(minutes) + "m, ") if minutes else "") + \
+          ((str(seconds) + "s, ") if seconds else "")
     return tmp[:-2]
-            
-progress_data = {}
+
 def progress(current, total, message, type):
     now = time.time()
     key = f"{message.id}_{type}"
@@ -84,9 +87,16 @@ def progress(current, total, message, type):
     eta = TimeFormatter((total - current) / speed) if speed > 0 else "Calculating"
     speed_str = humanbytes(speed) + "/s"
 
-    with open(f"{message.id}{type}status.txt", "w") as fileup:
-        fileup.write(f"{percent:.1f}% - {speed_str} - ETA: {eta}")
+    action = "Downloading" if type == "down" else "Uploading"
+    formatted = (
+    f"**{action}...** : **{percent:.1f}%**\n\n"
+    f"**⏳ Processed** : **{humanbytes(current)}** - **{humanbytes(total)}**\n"
+    f"**🚀 Speed** : **{speed_str}**\n"
+    f"**⏰ ETA** : **{eta}**\n"
+    )
 
+    with open(f"{message.id}{type}status.txt", "w") as fileup:
+        fileup.write(formatted)
 
 # start command
 @Client.on_message(filters.command(["start"]))
