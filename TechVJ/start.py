@@ -89,7 +89,8 @@ def progress(current, total, message, type):
 
     action = "Downloading" if type == "down" else "Uploading"
     formatted = (
-    f"**{action}...** : **{percent:.1f}%**\n\n"
+    f"**{action}...** \n\n"
+    f"**✅ Completed** : **{percent:.1f}%**\n"
     f"**⏳ Processed** : **{humanbytes(current)}** - **{humanbytes(total)}**\n"
     f"**🚀 Speed** : **{speed_str}**\n"
     f"**⏰ ETA** : **{eta}**\n"
