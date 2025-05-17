@@ -123,11 +123,13 @@ async def send_help(client: Client, message: Message):
 # cancel command
 @Client.on_message(filters.command(["cancel"]))
 async def send_cancel(client: Client, message: Message):
-    batch_temp.IS_BATCH[message.from_user.id] = True
-    await client.send_message(
-        chat_id=message.chat.id, 
-        text="**Batch Successfully Cancelled.**"
-    )
+    user_id = message.from_user.id
+    if user_id in batch_temp.IS_BATCH and batch_temp.IS_BATCH[user_id] is False:
+        batch_temp.IS_BATCH[user_id] = True
+        await message.reply("✅ **Batch cleared successfully.**")
+    else:
+        await message.reply("No active batch found.")
+        
 @Client.on_message(filters.text & filters.private)
 async def join_or_save(client: Client, message: Message):
     text = message.text.strip()
