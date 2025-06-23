@@ -4,6 +4,7 @@
 
 import os
 import time
+import random
 import asyncio 
 import pyrogram
 from pyrogram import Client, filters, enums
@@ -233,11 +234,11 @@ async def _save(client: Client, message: Message):
 
             # Custom Sleep Delay
             if "https://t.me/c/" in message.text:
-                delay = 5  # Private
+                delay = random.randint(15, 30)  # Private
             elif "https://t.me/b/" in message.text:
-                delay = 7  # Bot
+                delay = random.randint(10, 20)  # Bot
             else:
-                delay = 3  # Public
+                delay = random.randint(3, 6)  # Public
 
             await asyncio.sleep(delay)
 
