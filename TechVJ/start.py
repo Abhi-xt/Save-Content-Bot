@@ -224,9 +224,16 @@ async def _save(client: Client, message: Message):
                         if ERROR_MESSAGE == True:
                             await client.send_message(message.chat.id, f"Error: {e}", reply_to_message_id=message.id)
 
-            # wait time
-            await asyncio.sleep(10)
-        batch_temp.IS_BATCH[message.from_user.id] = True
+            # wait time based on type
+if "https://t.me/c/" in message.text:
+    delay = 15  # private channel
+elif "https://t.me/b/" in message.text:
+    delay = 7  # bot message
+else:
+    delay = 5  # public post
+
+await asyncio.sleep(delay)
+batch_temp.IS_BATCH[message.from_user.id] = True
 
 
 # handle private
