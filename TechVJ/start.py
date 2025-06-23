@@ -174,69 +174,68 @@ async def _save(client: Client, message: Message):
         except:
             toID = fromID
         batch_temp.IS_BATCH[message.from_user.id] = False
-        for msgid in range(fromID, toID+1):
-            if batch_temp.IS_BATCH.get(message.from_user.id): break
-            user_data = await db.get_session(message.from_user.id)
-            if user_data is None:
-                await message.reply("**For Downloading Restricted Content You Have To /login First.**")
-                batch_temp.IS_BATCH[message.from_user.id] = True
+            for msgid in range(fromID, toID + 1):
+        if batch_temp.IS_BATCH.get(message.from_user.id):
+            break
+        user_data = await db.get_session(message.from_user.id)
+        if user_data is None:
+            await message.reply("**For Downloading Restricted Content You Have To /login First.**")
+            batch_temp.IS_BATCH[message.from_user.id] = True
+            return
+        try:
+            acc = Client("saverestricted", session_string=user_data, api_hash=API_HASH, api_id=API_ID)
+            await acc.connect()
+        except:
+            batch_temp.IS_BATCH[message.from_user.id] = True
+            return await message.reply("**Your Login Session Expired. So /logout First Then Login Again By - /login**")
+
+        # private
+        if "https://t.me/c/" in message.text:
+            chatid = int("-100" + datas[4])
+            try:
+                await handle_private(client, acc, message, chatid, msgid)
+            except Exception as e:
+                if ERROR_MESSAGE == True:
+                    await client.send_message(message.chat.id, f"Error: {e}", reply_to_message_id=message.id)
+
+        # bot
+        elif "https://t.me/b/" in message.text:
+            username = datas[4]
+            try:
+                await handle_private(client, acc, message, username, msgid)
+            except Exception as e:
+                if ERROR_MESSAGE == True:
+                    await client.send_message(message.chat.id, f"Error: {e}", reply_to_message_id=message.id)
+
+        # public
+        else:
+            username = datas[3]
+            try:
+                msg = await client.get_messages(username, msgid)
+            except UsernameNotOccupied:
+                await client.send_message(message.chat.id, "The username is not occupied by anyone", reply_to_message_id=message.id)
                 return
             try:
-                acc = Client("saverestricted", session_string=user_data, api_hash=API_HASH, api_id=API_ID)
-                await acc.connect()
+                await client.copy_message(message.chat.id, msg.chat.id, msg.id, reply_to_message_id=message.id)
             except:
-                batch_temp.IS_BATCH[message.from_user.id] = True
-                return await message.reply("**Your Login Session Expired. So /logout First Then Login Again By - /login**")
-            
-            # private
-            if "https://t.me/c/" in message.text:
-                chatid = int("-100" + datas[4])
-                try:
-                    await handle_private(client, acc, message, chatid, msgid)
-                except Exception as e:
-                    if ERROR_MESSAGE == True:
-                        await client.send_message(message.chat.id, f"Error: {e}", reply_to_message_id=message.id)
-    
-            # bot
-            elif "https://t.me/b/" in message.text:
-                username = datas[4]
                 try:
                     await handle_private(client, acc, message, username, msgid)
                 except Exception as e:
                     if ERROR_MESSAGE == True:
                         await client.send_message(message.chat.id, f"Error: {e}", reply_to_message_id=message.id)
-            
-            # public
-            else:
-                username = datas[3]
 
-                try:
-                    msg = await client.get_messages(username, msgid)
-                except UsernameNotOccupied: 
-                    await client.send_message(message.chat.id, "The username is not occupied by anyone", reply_to_message_id=message.id)
-                    return
-                try:
-                    await client.copy_message(message.chat.id, msg.chat.id, msg.id, reply_to_message_id=message.id)
-                except:
-                    try:    
-                        await handle_private(client, acc, message, username, msgid)               
-                    except Exception as e:
-                        if ERROR_MESSAGE == True:
-                            await client.send_message(message.chat.id, f"Error: {e}", reply_to_message_id=message.id)
+        # custom wait time based on link type
+        if "https://t.me/c/" in message.text:
+            delay = 5  # private message
+        elif "https://t.me/b/" in message.text:
+            delay = 7  # bot message
+        else:
+            delay = 3  # public message
 
-            # wait time based on type
-            if "https://t.me/c/" in message.text:
-               delay = 15  # private channel
-            elif "https://t.me/b/" in message.text:
-               delay = 7  # bot message
-            else:
-               delay = 5  # public post
+        await asyncio.sleep(delay)
 
-            await asyncio.sleep(delay)
-
-          batch_temp.IS_BATCH[message.from_user.id] = True
-
-
+    batch_temp.IS_BATCH[message.from_user.id] = True
+                                              
 # handle private
 async def handle_private(client: Client, acc, message: Message, chatid: int, msgid: int):
     msg: Message = await acc.get_messages(chatid, msgid)
