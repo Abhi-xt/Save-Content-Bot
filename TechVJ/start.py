@@ -174,7 +174,7 @@ async def _save(client: Client, message: Message):
         except:
             toID = fromID
         batch_temp.IS_BATCH[message.from_user.id] = False
-            for msgid in range(fromID, toID + 1):
+        for msgid in range(fromID, toID + 1):
         if batch_temp.IS_BATCH.get(message.from_user.id):
             break
         user_data = await db.get_session(message.from_user.id)
